@@ -16,6 +16,12 @@ type Email struct {
 	Message   string
 }
 
+type EmailSender interface {
+	Send(email Email, protocol string) error
+	Validate(email Email) error
+	Store(email Email, sender, recipient string)
+}
+
 func (emailService *EmailService) Send(email Email, protocol string) error {
 	if err := emailService.Validate(email); err != nil {
 		fmt.Printf("Error validating email: %v\n", err)
@@ -68,7 +74,7 @@ func (es *EmailService) sendPOP3(email Email) {
 }
 
 func main() {
-	emailService := EmailService{DbConnectionString: "some_connection_string"}
+	emailSender := &EmailService{DbConnectionString: "some_connection_string"}
 
 	email := Email{
 		Sender:    "lets@go.com",
@@ -78,10 +84,10 @@ func main() {
 
 	protocol := "SMTP"
 
-	if err := emailService.Send(email, protocol); err != nil {
+	if err := emailSender.Send(email, protocol); err != nil {
 		fmt.Printf("Error sending email: %v\n", err)
 		return
 	}
 
-	emailService.Store(email, email.Sender, email.Recipient)
+	emailSender.Store(email, email.Sender, email.Recipient)
 }
